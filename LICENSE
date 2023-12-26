@@ -1,0 +1,4 @@
+src/Eigen is licensed under the MPL2 (See eigen.tuxfamily.org)
+src/vsop87a_full.cpp and src/vsop87a_full.h are under the public domain https://github.com/gmiller123456/vsop87-multilang
+
+All other code is released to the public domain
