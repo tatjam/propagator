@@ -25,8 +25,7 @@ private:
 
 public:
 
-
-	int use_geopotential_up_to;
+	bool use_geopotential;
 	bool use_ephemerides;
 
 	// tfor: How long to propagate for

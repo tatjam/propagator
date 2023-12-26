@@ -5,6 +5,8 @@
 #define MU_MOON 4.90486959e12
 #define MU_SUN 1.327124400189e20
 #define AU_TO_M 149597870700.0
+#define J2 0.00108264
+#define RT 6378137.0
 
 struct EmptyType
 {
@@ -35,7 +37,8 @@ struct EulerElements
 	std::conditional_t<has_vel, Eigen::Vector3d, EmptyType> vel;
 };
 
-static KeplerElements euler_to_kepler(const EulerElements<true>& euler)
+template<bool has_time>
+static KeplerElements euler_to_kepler(const EulerElements<true,has_time>& euler)
 {
 	KeplerElements out;
 	Eigen::Vector3d hv = euler.pos.cross(euler.vel);
@@ -50,15 +53,15 @@ static KeplerElements euler_to_kepler(const EulerElements<true>& euler)
 	out.e = std::sqrt(1.0 - h2 / (out.a * MU));
 
 	// Correct quadrant acos
-	out.inc = std::acos(hv(3) / h);
-	out.raan = std::atan2(hv(1), -hv(2));
+	out.inc = std::acos(hv(2) / h);
+	out.raan = std::atan2(hv(0), -hv(1));
 
 	double p = out.a * (1.0 - out.e * out.e);
 	double dp = euler.vel.dot(euler.pos);
 	out.true_anom = std::atan2(std::sqrt(p / MU) * dp, p - r);
 
 	out.arg_per = std::atan2(euler.pos(2) / std::sin(out.inc),
-							 euler.pos(0) * std::cos(out.raan) + euler.pos(1) * std::sin(out.raan));
+							 euler.pos(0) * std::cos(out.raan) + euler.pos(1) * std::sin(out.raan)) - out.true_anom;
 
 	return out;
 

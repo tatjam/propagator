@@ -3,7 +3,7 @@
 
 Propagator::Propagator()
 {
-	use_geopotential_up_to = 1;
+	use_geopotential = true;
 	use_ephemerides = true;
 
 }
@@ -20,6 +20,7 @@ void Propagator::f(EulerElements<true> &prime, const EulerElements<true> &eval, 
 {
 	prime.pos = eval.vel;
 
+	// Standard newtonian gravity
 	double pnorm = eval.pos.norm();
 	double pnorm3 = pnorm * pnorm * pnorm;
 	prime.vel = -MU * eval.pos / pnorm3;
@@ -56,7 +57,7 @@ void Propagator::f(EulerElements<true> &prime, const EulerElements<true> &eval, 
 			double lsat_to_moon = sat_to_moon.norm();
 			double lsat_to_sun = sat_to_sun.norm();
 			// Newton law on these two bodies
-			ephemeris_acc += MU_MOON * sat_to_moon / (lsat_to_moon * lsat_to_moon * lsat_to_moon);
+			ephemeris_acc = MU_MOON * sat_to_moon / (lsat_to_moon * lsat_to_moon * lsat_to_moon);
 			ephemeris_acc += MU_SUN * sat_to_sun / (lsat_to_sun * lsat_to_sun * lsat_to_sun);
 
 			// The bodies also attract the Earth, include secondary tidal acceleration
@@ -69,6 +70,22 @@ void Propagator::f(EulerElements<true> &prime, const EulerElements<true> &eval, 
 	{
 		prime.vel += ephemeris_acc;
 	}
+
+	if(use_geopotential)
+	{
+		// Note that nutation and precession causes earth's rotation axis to change slightly
+		// we do implement the simple model of these effects:
+		Eigen::Vector3d earth_rot_axis(0, 0, 1);
+
+		//  Note that u dot v = |u| |v| cos(angle)
+		// and phi is simply the latitude, so that we have
+		double phi = std::acos(earth_rot_axis.dot(eval.pos) / pnorm);
+		double sphi = std::sin(phi);
+		// Compute J2 effect
+		//prime.vel -= MU * J2 * RT * RT / (2.0 * pnorm3) * (1.0 - 3.0 * sphi * sphi) * eval.pos;
+
+	}
+
 }
 
 void

@@ -1,6 +1,7 @@
 #pragma once
 #include "Kepler.h"
 #include <fstream>
+#include <iomanip>
 
 
 // Format is
@@ -16,6 +17,7 @@ void append_table(const std::vector<EulerElements<has_vel, has_time>>& elems, co
 	std::ofstream f;
 	f.open(file, std::ofstream::out | std::ofstream::app);
 
+	f << std::setprecision(16);
 	for(const EulerElements<has_vel, has_time>& elem : elems)
 	{
 		if constexpr (has_time)
@@ -43,6 +45,7 @@ void append_osculating(const std::vector<EulerElements<true, has_time>>& elems, 
 	std::ofstream f;
 	f.open(file, std::ofstream::out | std::ofstream::app);
 
+	f << std::setprecision(16);
 	for(const EulerElements<true, has_time>& elem : elems)
 	{
 		if constexpr (has_time)
