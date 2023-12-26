@@ -1,4 +1,5 @@
 #include "Propagator.h"
+#include <iostream>
 
 
 Propagator::Propagator()
@@ -23,6 +24,7 @@ void Propagator::f(EulerElements<true> &prime, const EulerElements<true> &eval, 
 	// Standard newtonian gravity
 	double pnorm = eval.pos.norm();
 	double pnorm3 = pnorm * pnorm * pnorm;
+
 	prime.vel = -MU * eval.pos / pnorm3;
 
 	if constexpr (eval_time)
@@ -77,12 +79,15 @@ void Propagator::f(EulerElements<true> &prime, const EulerElements<true> &eval, 
 		// we do implement the simple model of these effects:
 		Eigen::Vector3d earth_rot_axis(0, 0, 1);
 
-		//  Note that u dot v = |u| |v| cos(angle)
-		// and phi is simply the latitude, so that we have
-		double phi = std::acos(earth_rot_axis.dot(eval.pos) / pnorm);
-		double sphi = std::sin(phi);
-		// Compute J2 effect
-		//prime.vel -= MU * J2 * RT * RT / (2.0 * pnorm3) * (1.0 - 3.0 * sphi * sphi) * eval.pos;
+		// So we obtain new coordinates on the rotated axes
+
+		// Compute J2 effect (Our J2 definition includes Mu and Earth's radius!)
+		Eigen::Vector3d eff;
+		double base = eval.pos(0) * eval.pos(0) + eval.pos(1) * eval.pos(1);
+		eff(0) = eval.pos(0) * (6.0 * eval.pos(2) * eval.pos(2) - 3.0 / 2.0 * base);
+		eff(1) = eval.pos(1) * (6.0 * eval.pos(2) * eval.pos(2) - 3.0 / 2.0 * base);
+		eff(2) = eval.pos(2) * (3.0 * eval.pos(2) * eval.pos(2) - 9.0 / 2.0 * base);
+		prime.vel += J2 * eff / (pnorm3 * pnorm3 * pnorm);
 
 	}
 

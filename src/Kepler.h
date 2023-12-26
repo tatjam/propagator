@@ -5,8 +5,10 @@
 #define MU_MOON 4.90486959e12
 #define MU_SUN 1.327124400189e20
 #define AU_TO_M 149597870700.0
-#define J2 0.00108264
-#define RT 6378137.0
+#define J2 1.75553e25
+#define DEG_TO_RAD 0.01745329
+#define RAD_TO_DEG 57.29578
+
 
 struct EmptyType
 {
