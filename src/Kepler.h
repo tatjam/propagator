@@ -24,10 +24,11 @@ struct KeplerElements
 	double true_anom;
 };
 
-template<bool has_vel>
+template<bool has_vel, bool has_time = false>
 struct EulerElements
 {
 	Eigen::Vector3d pos;
+	std::conditional_t<has_time, double, EmptyType> time;
 	std::conditional_t<has_vel, Eigen::Vector3d, EmptyType> vel;
 };
 
@@ -53,8 +54,8 @@ static KeplerElements euler_to_kepler(const EulerElements<true>& euler)
 	double dp = euler.vel.dot(euler.pos);
 	out.true_anom = std::atan2(std::sqrt(p / MU) * dp, p - r);
 
-	out.arg_per = std::atan2(euler.pos(3) / std::sin(out.inc),
-							 euler.pos(1) * std::cos(out.raan) + euler.pos(2) * std::sin(out.raan));
+	out.arg_per = std::atan2(euler.pos(2) / std::sin(out.inc),
+							 euler.pos(0) * std::cos(out.raan) + euler.pos(1) * std::sin(out.raan));
 
 	return out;
 
@@ -69,24 +70,24 @@ static EulerElements<has_vel> kepler_to_euler(const KeplerElements& kepler)
 
 	EulerElements<has_vel> out;
 
-	out.pos(1) = r * (std::cos(kepler.raan) * std::cos(kepler.arg_per + kepler.true_anom)
+	out.pos(0) = r * (std::cos(kepler.raan) * std::cos(kepler.arg_per + kepler.true_anom)
 			- std::sin(kepler.raan) * std::sin(kepler.arg_per + kepler.true_anom) * std::cos(kepler.inc));
-	out.pos(2) = r * (std::sin(kepler.raan) * std::cos(kepler.arg_per + kepler.true_anom)
+	out.pos(1) = r * (std::sin(kepler.raan) * std::cos(kepler.arg_per + kepler.true_anom)
 					  + std::cos(kepler.raan) * std::sin(kepler.arg_per + kepler.true_anom) * std::cos(kepler.inc));
-	out.pos(3) = r * (std::sin(kepler.inc) * std::sin(kepler.arg_per + kepler.true_anom));
+	out.pos(2) = r * (std::sin(kepler.inc) * std::sin(kepler.arg_per + kepler.true_anom));
 
 	if constexpr (has_vel)
 	{
 		double h = std::sqrt(MU * p);
 
 		double t1 = h * kepler.e / (r * p) * std::sin(kepler.true_anom);
-		out.vel(1) = out.pos(1) * t1 - h / r * (std::cos(kepler.raan) * std::sin(kepler.arg_per + kepler.true_anom) +
+		out.vel(0) = out.pos(0) * t1 - h / r * (std::cos(kepler.raan) * std::sin(kepler.arg_per + kepler.true_anom) +
 												std::sin(kepler.raan) * std::cos(kepler.arg_per + kepler.true_anom) *
 												std::cos(kepler.inc));
-		out.vel(2) = out.pos(2) * t1 - h / r * (std::sin(kepler.raan) * std::sin(kepler.arg_per + kepler.true_anom) -
+		out.vel(1) = out.pos(1) * t1 - h / r * (std::sin(kepler.raan) * std::sin(kepler.arg_per + kepler.true_anom) -
 												std::cos(kepler.raan) * std::cos(kepler.arg_per + kepler.true_anom) *
 												std::cos(kepler.inc));
-		out.vel(3) = out.pos(3) * t1 + h / r * std::sin(kepler.inc) * std::cos(kepler.arg_per + kepler.true_anom);
+		out.vel(2) = out.pos(2) * t1 + h / r * std::sin(kepler.inc) * std::cos(kepler.arg_per + kepler.true_anom);
 	}
 
 	return out;
