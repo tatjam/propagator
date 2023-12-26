@@ -1,10 +1,10 @@
 //VSOP87-Multilang http://www.astrogreg.com/vsop87-multilang/index.html
 //Greg Miller (gmiller@gregmiller.net) 2019.  Released as Public Domain
 
-#ifndef VSOP87A_FULL
-#define VSOP87A_FULL
+#ifndef VSOP87A_LARGE
+#define VSOP87A_LARGE
 
-class vsop87a_full{
+class vsop87a_large{
    public:
    static void getEarth(double t,double temp[]);
    static void getEmb(double t,double temp[]);

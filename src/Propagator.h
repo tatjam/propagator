@@ -1,7 +1,7 @@
 #pragma once
 #include "Kepler.h"
 #include "Eigen/Dense"
-#include "vsop87a_full.h"
+#include "vsop87a_large.h"
 
 class Propagator
 {
@@ -13,15 +13,20 @@ private:
 	double t;
 	double st;
 
+	Eigen::Vector3d ephemeris_acc;
+
+	using vsop = vsop87a_large;
+
 	// Note, prime is derivatives! pos -> vel  and   vel -> acc
-	void f(EulerElements<true>& prime, const EulerElements<true>& eval);
+	template<bool eval_time>
+	void f(EulerElements<true>& prime, const EulerElements<true>& eval, double t);
 	void set_b(EulerElements<true>& b, const EulerElements<true>& prime, const EulerElements<true>& b0, double h);
 
 
 public:
 
 
-	bool use_geopotential;
+	int use_geopotential_up_to;
 	bool use_ephemerides;
 
 	// tfor: How long to propagate for

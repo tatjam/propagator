@@ -2,6 +2,9 @@
 #include "Eigen/Dense"
 
 #define MU 3.9860044188e14
+#define MU_MOON 4.90486959e12
+#define MU_SUN 1.327124400189e20
+#define AU_TO_M 149597870700.0
 
 struct EmptyType
 {
