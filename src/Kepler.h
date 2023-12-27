@@ -71,6 +71,48 @@ static KeplerElements euler_to_kepler(const EulerElements<true,has_time>& euler)
 
 }
 
+template<bool has_time>
+static KeplerElements euler_to_kepler_circular(const EulerElements<false, has_time>& euler, double a, double i)
+{
+	KeplerElements out;
+	out.e = 0.0;
+	out.a = a;
+	out.inc = i;
+
+	double r2 = euler.pos.squaredNorm();
+
+	// We can predict the angular momentum from given data, note that
+	// h^2 / mu = p = a in circular orbits
+	double h = std::sqrt(a * MU);
+
+	// Note that cos(i) = hz / h
+	Eigen::Vector3d hv;
+	hv(2) = h * std::cos(i);
+
+	// h = sqrt(hv(0)^2 + hv(1)^2 + hv(2)^2)
+	// We know that h is perpendicular to the orbit plane, so
+	// h dot p = 0
+	// which gives
+	// hv(0) * p(0) + hv(1) * p(1) + hv(2) * p(2) = 0
+	// So we can solve hv(0) and hv(1) from these two equations, giving
+	// a quadratic, we take only one of the solutions:
+	// (These were obtained using Mathematica)
+
+	double t1 = euler.pos(0) * euler.pos(0) + euler.pos(1) * euler.pos(1);
+	double root = std::sqrt(euler.pos(1) * euler.pos(1) * (h * h * t1 - hv(2) * hv(2) * r2));
+	hv(0) = (-hv(2) * euler.pos(0) * euler.pos(2) + root) / t1;
+	hv(1) = (-hv(2) * euler.pos(1) * euler.pos(1) * euler.pos(2) + euler.pos(0) * root) / (euler.pos(1) * t1);
+
+	// Correct quadrant acos
+	out.raan = std::atan2(hv(0), -hv(1));
+
+	out.arg_per = std::atan2(euler.pos(2) / std::sin(out.inc),
+							 euler.pos(0) * std::cos(out.raan) + euler.pos(1) * std::sin(out.raan)) - out.true_anom;
+
+	return out;
+
+}
+
 // We only support the elliptical case
 template<bool has_vel>
 static EulerElements<has_vel> kepler_to_euler(const KeplerElements& kepler)
