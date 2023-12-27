@@ -8,16 +8,15 @@ int main(void)
 {
 	Propagator prop;
 	KeplerElements kepler;
-	kepler.a = 7770e3;
-	kepler.e = 0.01;
-	kepler.raan = 0.4;
-	kepler.arg_per = 0.2;
-	kepler.inc = 98.1 * DEG_TO_RAD;
-	kepler.true_anom = 0.3;
+	kepler.a = 7633e3;
+	kepler.raan = 0.0;
+	kepler.arg_per = 0.0;
+	kepler.inc = 100.75 * DEG_TO_RAD;
+	kepler.true_anom = 0.0;
 	EulerElements<true> start = kepler_to_euler<true>(kepler);
 	prop.init(0.0, start);
 
-	prop.use_ephemerides = false;
+	prop.use_ephemerides = true;
 	prop.use_geopotential = true;
 
 	clear_file("out.txt");

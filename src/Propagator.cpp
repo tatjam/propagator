@@ -75,12 +75,6 @@ void Propagator::f(EulerElements<true> &prime, const EulerElements<true> &eval, 
 
 	if(use_geopotential)
 	{
-		// Note that nutation and precession causes earth's rotation axis to change slightly
-		// we do implement the simple model of these effects:
-		Eigen::Vector3d earth_rot_axis(0, 0, 1);
-
-		// So we obtain new coordinates on the rotated axes
-
 		// Compute J2 effect (Our J2 definition includes Mu and Earth's radius!)
 		Eigen::Vector3d eff;
 		double base = eval.pos(0) * eval.pos(0) + eval.pos(1) * eval.pos(1);
@@ -88,7 +82,6 @@ void Propagator::f(EulerElements<true> &prime, const EulerElements<true> &eval, 
 		eff(1) = eval.pos(1) * (6.0 * eval.pos(2) * eval.pos(2) - 3.0 / 2.0 * base);
 		eff(2) = eval.pos(2) * (3.0 * eval.pos(2) * eval.pos(2) - 9.0 / 2.0 * base);
 		prime.vel += J2 * eff / (pnorm3 * pnorm3 * pnorm);
-
 	}
 
 }
